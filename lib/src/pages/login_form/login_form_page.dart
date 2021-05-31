@@ -6,10 +6,22 @@ import '../../logic/authentication/authentication_bloc.dart';
 import '../../logic/login_form/login_form_bloc.dart';
 import '../../logic/user/user_bloc.dart';
 
-class LoginFormPage extends StatelessWidget {
+class LoginFormPage extends StatefulWidget {
+  @override
+  _LoginFormPageState createState() => _LoginFormPageState();
+}
+
+class _LoginFormPageState extends State<LoginFormPage> {
   final String errorMessage = 'This field is required';
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+
+  GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    _formKey = GlobalKey<FormState>();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

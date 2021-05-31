@@ -36,10 +36,12 @@ class _MyAppState extends State<MyApp> {
           lazy: false,
           create: (context) => NotificationsBloc(
             notificationsRepository: NotificationsRepositoryImpl()
-          ),
+          )..add(InitiateGetUnreadNotificationsCount()),
         ),
       ],
       child: MaterialApp(
+        // debugShowMaterialGrid: false,
+        debugShowCheckedModeBanner: false,
         title: 'YourVoyce',
         theme: ThemeData(
           fontFamily: "Roboto",

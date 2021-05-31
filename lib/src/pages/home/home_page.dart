@@ -269,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                 
                 if (index == 0) {
                   await _inAppWebViewController.loadUrl(
-                      url: 'https://yourvoyce.com/');
+                      url: 'https://yourvoyce.com/?home');
                 } else if (index == 1) {
                   await _inAppWebViewController.loadUrl(
                       url: 'https://yourvoyce.com/search');

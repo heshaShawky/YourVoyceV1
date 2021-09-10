@@ -40,6 +40,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           authUser: authUser
         );
 
+        await _authenticationRepository.saveUserId(authUser.body.user['user_id'].toString());
+
         _authenticationBloc.add(
           Login(
             token: authUser.body.oauthToken
@@ -47,9 +49,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         );
 
       } catch (e) {
-        yield UserError(
-          error: e
-        );
+        // inspect(e);
+        if ( e is ApiError )
+          yield UserError(
+            error: e
+          );
       }
     } else if ( event is CreateNewUser ) {
       try {
@@ -69,6 +73,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         yield UserLoaded(
           authUser: authUser
         );
+
+        await _authenticationRepository.saveUserId(authUser.body.user['user_id'].toString());
 
         _authenticationBloc.add(
           Login(

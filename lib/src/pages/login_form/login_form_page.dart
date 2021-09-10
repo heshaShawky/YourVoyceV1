@@ -148,7 +148,11 @@ class _LoginFormPageState extends State<LoginFormPage> {
                         },
                       );
                     } else if ( state is UserLoaded ) {
-                      Navigator.pushReplacementNamed(context, 'home');
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        'home',
+                        (Route<dynamic> route) => false,
+                      );
                     }
                   },
                 )

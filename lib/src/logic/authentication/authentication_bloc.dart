@@ -20,14 +20,17 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   Stream<AuthenticationState> mapEventToState(
     AuthenticationEvent event,
   ) async* {
+    final currentState = state;
     if ( event is GetAuthenticationStatusOnAppStarting ) {
       final bool isUserAuthenticated = await _userRepository.hasToken();
+      final bool isELUABeenAccepted = await _userRepository.isELUABeenAccepted();
 
       if ( isUserAuthenticated ) {
         final String token = await _userRepository.getToken();
 
         yield AuthenticationAuthenticated(
-          token: token
+          token: token,
+          isELUABeenAccepted: isELUABeenAccepted
         );
         return;
       }
@@ -37,10 +40,23 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       try {
         await _userRepository.persistToken(token: event.token);
         yield AuthenticationAuthenticated(
-          token: event.token
+          token: event.token,
+          isELUABeenAccepted: await _userRepository.isELUABeenAccepted()
         );
       } catch (e) {
         print(e.toString());
+      }
+    } else if (event is AcceptELUA ) {
+      if ( currentState is AuthenticationAuthenticated ) {
+        try {
+          await _userRepository.eluaBeenAccepted();
+          yield currentState.copyWith(
+            isELUABeenAccepted: true
+          );
+        } catch (e) {
+
+        }
+        
       }
     } else if ( event is Logout ) {
       try {

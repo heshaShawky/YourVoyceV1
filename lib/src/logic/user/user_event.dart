@@ -1,10 +1,7 @@
 part of 'user_bloc.dart';
 
-abstract class UserEvent extends Equatable {
+abstract class UserEvent {
   const UserEvent();
-
-  @override
-  List<Object> get props => [];
 }
 
 class LoginByEmailAndPassword extends UserEvent {
@@ -16,8 +13,8 @@ class LoginByEmailAndPassword extends UserEvent {
     @required this.password,
   });
 
-  @override
-  List<Object> get props => [email, password];
+  // @override
+  // List<Object> get props => [email, password];
 
   @override
   String toString() => 'LoginByEmailAndPassword { email: $email, password: $password }';
@@ -44,17 +41,17 @@ class CreateNewUser extends UserEvent {
     this.timezone
   });
 
-  @override
-  List<Object> get props => [
-    email,
-    password,
-    rePassword,
-    inviteCode,
-    username,
-    fullName,
-    language,
-    timezone
-  ];
+  // @override
+  // List<Object> get props => [
+  //   email,
+  //   password,
+  //   rePassword,
+  //   inviteCode,
+  //   username,
+  //   fullName,
+  //   language,
+  //   timezone
+  // ];
 
   // @override
   // String toString() => """

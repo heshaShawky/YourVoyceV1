@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:yourvoyce/src/logic/notifications/notifications_bloc.dart';
 
 import 'src/app.dart';
 import 'src/data/user_repository.dart';
@@ -36,12 +37,24 @@ void main() {
   
   
   runApp(
-    BlocProvider(
-      create: (context) => AuthenticationBloc(
-          userRepository: UserRepositoryImpl()
-        )..add(
-          GetAuthenticationStatusOnAppStarting()
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthenticationBloc(
+            userRepository: UserRepositoryImpl()
+          )..add(
+            GetAuthenticationStatusOnAppStarting()
+          ),
         ),
+        BlocProvider(
+          lazy: false,
+          create: (context) => NotificationsBloc(
+            userRepository: UserRepositoryImpl()
+          )..add(
+            InitiateNotifications()
+          )
+        ),
+      ],
       child: MyApp(),
     )
   );

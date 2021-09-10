@@ -1,4 +1,4 @@
-import 'user_model.dart';
+
 
 class AuthUser {
   int statusCode;
@@ -24,7 +24,7 @@ class AuthUser {
 class Body {
   String oauthToken;
   String oauthSecret;
-  User user;
+  dynamic user;
   Tabs tabs;
   String pmAccessToken;
   String chAccessTokenv2;
@@ -40,7 +40,7 @@ class Body {
   Body.fromJson(Map<String, dynamic> json) {
     oauthToken = json['oauth_token'];
     oauthSecret = json['oauth_secret'];
-    user = json['user'] != null ? new User.fromJson(json['user']) : null;
+    user = json['user'];
     tabs = json['tabs'] != null ? new Tabs.fromJson(json['tabs']) : null;
     pmAccessToken = json['pmAccessToken'];
     chAccessTokenv2 = json['chAccessTokenv2'];
@@ -50,9 +50,10 @@ class Body {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['oauth_token'] = this.oauthToken;
     data['oauth_secret'] = this.oauthSecret;
-    if (this.user != null) {
-      data['user'] = this.user.toJson();
-    }
+    data['user'] = this.user;
+    // if (this.user != null) {
+    //   data['user'] = this.user.toJson();
+    // }
     if (this.tabs != null) {
       data['tabs'] = this.tabs.toJson();
     }

@@ -1,6 +1,6 @@
 import UIKit
 import Flutter
-import workmanager
+//import workmanager
 import shared_preferences
 import flutter_app_badger
 
@@ -21,15 +21,15 @@ import flutter_app_badger
     
 //    AppDelegate.registerPlugins(with: self)
     
-    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
-        // The following code will be called upon WorkmanagerPlugin's registration.
-        // Note : all of the app's plugins may not be required in this context ;
-        // instead of using GeneratedPluginRegistrant.register(with: registry),
-        // you may want to register only specific plugins.
-        
-        FLTSharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "io.flutter.plugins.sharedpreferences")!)
-        FlutterAppBadgerPlugin.register(with: registry.registrar(forPlugin: "fr.g123k.flutterappbadger.FlutterAppBadgerPlugin")!)
-    }
+//    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
+//        // The following code will be called upon WorkmanagerPlugin's registration.
+//        // Note : all of the app's plugins may not be required in this context ;
+//        // instead of using GeneratedPluginRegistrant.register(with: registry),
+//        // you may want to register only specific plugins.
+//
+//        FLTSharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "io.flutter.plugins.sharedpreferences")!)
+//        FlutterAppBadgerPlugin.register(with: registry.registrar(forPlugin: "fr.g123k.flutterappbadger.FlutterAppBadgerPlugin")!)
+//    }
     
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

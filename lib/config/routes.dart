@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../src/pages/elua/elua_page.dart';
 import '../src/pages/home/home_page.dart';
 import '../src/pages/intro/intro_page.dart';
 import '../src/pages/login_form/login_form_page.dart';
@@ -12,6 +13,10 @@ class RouteGenerator {
     {
       "name": "intro",
       "screen": IntroPage()
+    },
+    {
+      "name": "elua",
+      "screen": EluaPage()
     },
     {
       "name": "splash",

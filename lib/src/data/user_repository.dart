@@ -1,6 +1,8 @@
 
 
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,6 +32,10 @@ abstract class UserRepository {
   // Future<bool> _deleteToken();
   Future<void> logout();
   Future<bool> hasToken();
+  Future<bool> isELUABeenAccepted();
+  Future<bool> eluaBeenAccepted();
+  Future<bool> saveUserId(String userId);
+  Future<String> getUserId();
 }
 
 class UserRepositoryImpl extends ApiProvider implements UserRepository {
@@ -51,10 +57,16 @@ class UserRepositoryImpl extends ApiProvider implements UserRepository {
           "ip": "192.168.1.1"
         }
       );
+
       
       if ( response['error'] == true ) {
         throw ApiError.fromJson(response);
       }
+
+      inspect(AuthUser.fromJson(response).body.user['user_id']);
+
+      // await saveUserId(AuthUser.fromJson(response).body.user['user_id']);
+
 
       return AuthUser.fromJson(response);
     } catch (e) {
@@ -113,6 +125,8 @@ class UserRepositoryImpl extends ApiProvider implements UserRepository {
         throw ApiError.fromJson(response);
       }
 
+      // await saveUserId(AuthUser.fromJson(response).body.user['user_id']);
+
       return AuthUser.fromJson(response);  
     } catch (e) {
       throw e;
@@ -156,6 +170,53 @@ class UserRepositoryImpl extends ApiProvider implements UserRepository {
       throw e;
     }
   }
+
+  @override
+  Future<bool> isELUABeenAccepted() async {
+    try {
+      // (await _sharedPreferences).remove('isELUABeenAccepted');
+      final bool isELUABeenAccepted = (await _sharedPreferences).getBool('isELUABeenAccepted');
+
+      return isELUABeenAccepted;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @override
+  Future<bool> eluaBeenAccepted() async {
+    try {
+      final bool acceptElua = await (await _sharedPreferences).setBool('isELUABeenAccepted', true);
+
+      return acceptElua;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @override
+  Future<bool> saveUserId(String userId) async {
+    try {
+      bool saveUserID = await (await _sharedPreferences).setString('userId', userId);
+
+      return saveUserID;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  @override
+  Future<String> getUserId() async {
+    try {
+      final String userID = (await _sharedPreferences).getString('userId');
+
+      return userID;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+
 
   // @override
   // Future getSignupFormFields() async {

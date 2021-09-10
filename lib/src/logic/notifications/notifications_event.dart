@@ -6,5 +6,20 @@ abstract class NotificationsEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
-class InitiateGetUnreadNotificationsCount extends NotificationsEvent {}
-class GetUnreadNotificationsCount extends NotificationsEvent {}
+
+class InitiateNotifications extends NotificationsEvent {}
+
+// SetNotifcationsSetting
+
+class SetNotifcationsSetting extends NotificationsEvent {
+  final InAppWebViewController inAppWebViewController;
+
+  SetNotifcationsSetting(this.inAppWebViewController);
+
+
+
+}
+
+
+// class InitiateGetUnreadNotificationsCount extends NotificationsEvent {}
+// class GetUnreadNotificationsCount extends NotificationsEvent {}

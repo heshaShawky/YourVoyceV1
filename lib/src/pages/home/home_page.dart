@@ -1,11 +1,17 @@
 // import 'dart:developer';
 
+
 import 'package:flutter/material.dart';
 // import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:yourvoyce/src/data/user_repository.dart';
 import 'package:yourvoyce/src/logic/authentication/authentication_bloc.dart';
+import 'package:yourvoyce/src/logic/notifications/notifications_bloc.dart';
 import 'package:yourvoyce/src/logic/tabs/tabs_bloc.dart';
+import 'package:yourvoyce/src/pages/elua/elua_page.dart';
+import 'package:yourvoyce/src/pages/intro/intro_page.dart';
 
 import '../../logic/webview/webview_bloc.dart';
 
@@ -25,7 +31,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      // create: (context) => TabsBloc(),
       providers: [
         BlocProvider(
           create: (context) => WebviewBloc(),
@@ -34,66 +39,43 @@ class _HomePageState extends State<HomePage> {
           create: (context) => TabsBloc(),
         )
       ],
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          toolbarHeight: 0,
-          centerTitle: false,
-          elevation: 0,
-          iconTheme: IconThemeData(
-            color: Colors.lightBlue
-          ),
-          backgroundColor: Theme.of(context).colorScheme.onPrimary,
-          brightness: Brightness.light,
-          // title: Image.asset(
-          //   'assets/images/logo.png',
-          //   width: 100,
-          //   fit: BoxFit.contain,
-          // ),
-          // actions: [
-          //   IconButton(
-          //     icon: Icon(Icons.person), 
-          //     onPressed: () {
+      child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
+        builder: (context, authState) {
+          if ( authState is AuthenticationAuthenticated && !authState.isELUABeenAccepted )
+            return EluaPage();
 
-          //     }
-          //   ),
-          //   IconButton(
-          //     icon: Icon(Icons.logout), 
-          //     onPressed: () {
+          else if ( authState is AuthenticationAuthenticated && authState.isELUABeenAccepted )
+            return Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: AppBar(
+                toolbarHeight: 0,
+                centerTitle: false,
+                elevation: 0,
+                iconTheme: IconThemeData(
+                  color: Colors.lightBlue
+                ),
+                backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                brightness: Brightness.light,
+              ),
+              body: WillPopScope(
+                onWillPop: () async {
+                  if (await _inAppWebViewController.canGoBack()) {
+                    final int currentIndex =
+                        (await _inAppWebViewController.getCopyBackForwardList())
+                            .currentIndex;
+                    final String prevLink =
+                        (await _inAppWebViewController.getCopyBackForwardList())
+                            .list[currentIndex - 2]
+                            .url;
 
-          //     }
-          //   )
-          // ],
-        ),
-        body: WillPopScope(
-          onWillPop: () async {
-            if (await _inAppWebViewController.canGoBack()) {
-              final int currentIndex =
-                  (await _inAppWebViewController.getCopyBackForwardList())
-                      .currentIndex;
-              final String prevLink =
-                  (await _inAppWebViewController.getCopyBackForwardList())
-                      .list[currentIndex - 2]
-                      .url;
+                    await _inAppWebViewController.loadUrl(url: prevLink);
+                    return false;
+                  }
 
-              await _inAppWebViewController.loadUrl(url: prevLink);
-              return false;
-            }
-
-            return true;
-          },
-          child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
-            listener: (context, state) {
-              // print(state);
-              if ( state is AuthenticationUnauthenticated ) {
-                // print('test');
-                Navigator.of(context).pushReplacementNamed('intro');
-              }
-            },
-            builder: (context, authState) {
-              if (authState is AuthenticationAuthenticated) {
-                return BlocBuilder<WebviewBloc, WebviewState>(
-                  
+                  return true;
+                },
+                child: BlocBuilder<WebviewBloc, WebviewState>(
+                        
                   builder: (context, state) {
                     return Stack(
                       children: [
@@ -105,6 +87,7 @@ class _HomePageState extends State<HomePage> {
                               crossPlatform: InAppWebViewOptions(
                                 supportZoom: false,
                                 cacheEnabled: true,
+                                // useOnDownloadStart: true
                                 // clearCache: true
                               ),
                               android: AndroidInAppWebViewOptions(
@@ -112,9 +95,13 @@ class _HomePageState extends State<HomePage> {
                                 allowFileAccess: true,
                                 allowContentAccess: true,
                                 allowFileAccessFromFileURLs: true,
-                                allowUniversalAccessFromFileURLs: true
+                                allowUniversalAccessFromFileURLs: true,
                               )
                             ),
+                            // onDownloadStart: (InAppWebViewController controller, String url) async {
+                            //   // await launch(url);
+                            //   print('test');
+                            // },
                             onLoadError: (InAppWebViewController controller, String url, int code, String message) async {
                               // print(code);
                               await controller.stopLoading();
@@ -125,6 +112,11 @@ class _HomePageState extends State<HomePage> {
                             },
                             onWebViewCreated: (InAppWebViewController controller) {
                               _inAppWebViewController = controller;
+                              BlocProvider.of<NotificationsBloc>(context).add(
+                                SetNotifcationsSetting(
+                                  _inAppWebViewController
+                                )
+                              );
                             },
                             onLoadStart: (controller, url) {
                               // print("started $url");
@@ -134,6 +126,8 @@ class _HomePageState extends State<HomePage> {
                                 currentTabIndex = 1;
                               } else if ( url.contains('notification')) {
                                 currentTabIndex = 2;
+                              } else if (url.contains('YVMessages')) {
+                                currentTabIndex = 3;
                               }
 
                               BlocProvider.of<TabsBloc>(context).add(
@@ -224,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                     onPressed: () async {
                                       // print(await _inAppWebViewController.getUrl());
-                                     await  _inAppWebViewController.loadUrl(url: 'https://yourvoyce.com/members/home');
+                                      await  _inAppWebViewController.loadUrl(url: 'https://yourvoyce.com/members/home');
                                     }
                                   )
                                 ],
@@ -236,65 +230,84 @@ class _HomePageState extends State<HomePage> {
                       ],
                     );
                   },
-                );
-              }
-
-              return Container();
-            },
-          ),
-        ),
-        bottomNavigationBar: BlocBuilder<TabsBloc, TabsState>(
-          builder: (context, state) {
-            return BottomNavigationBar(
-              currentIndex: state is TabsInitial ? state.activeTabIndex : 0,
-              type: BottomNavigationBarType.fixed,
-              items: [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-                BottomNavigationBarItem( icon: Icon(Icons.notifications), label: 'Notifications'),
-                BottomNavigationBarItem( 
-                  icon: Icon(
-                    Icons.chat
-                  ), 
-                  label: 'Chat'
                 ),
-                BottomNavigationBarItem( icon: Icon(Icons.arrow_back), label: 'Back'),
-              ],
-              onTap: (index) async {
-    
-                if ( index != 4 )
-                  BlocProvider.of<TabsBloc>(context).add(
-                    ChangeActiveTab(index)
-                  );
-                
-                if (index == 0) {
-                  await _inAppWebViewController.loadUrl(
-                      url: 'https://yourvoyce.com/?home');
-                } else if (index == 1) {
-                  await _inAppWebViewController.loadUrl(
-                      url: 'https://yourvoyce.com/search');
-                } else if (index == 2) {
-                  await _inAppWebViewController.loadUrl(
-                      url: 'https://yourvoyce.com/activity/notifications');
-                } else if ( index == 3 ) {
-                    await _inAppWebViewController.evaluateJavascript(
-                      source: """
-                        window.channelizeUI.openMessenger()
-                      """
-                    );
-                } else if (index == 4) {
-                  if (await _inAppWebViewController.canGoBack()) {
-                    final int currentIndex = (await _inAppWebViewController.getCopyBackForwardList()).currentIndex;
-                    final String prevLink =(await _inAppWebViewController.getCopyBackForwardList()).list[currentIndex - 2].url;
+                // child: BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                //   listener: (context, state) {
+                //     // print(state);
+                //     if ( state is AuthenticationUnauthenticated ) {
+                //       // print('test');
+                //       Navigator.of(context).pushReplacementNamed('intro');
+                //     }
+                //   },
+                //   builder: (context, authState) {
+                //     if (authState is AuthenticationAuthenticated) {
+                //       // inspect(authState);
+                //       return 
+                //     }
 
-                    await _inAppWebViewController.loadUrl(url: prevLink);
-                  }
-                }
-              },
+                //     return Container();
+                //   },
+                // ),
+              ),
+              bottomNavigationBar: BlocBuilder<TabsBloc, TabsState>(
+                builder: (context, state) {
+                  return BottomNavigationBar(
+                    currentIndex: state is TabsInitial ? state.activeTabIndex : 0,
+                    type: BottomNavigationBarType.fixed,
+                    items: [
+                      BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                      BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+                      BottomNavigationBarItem( icon: Icon(Icons.notifications), label: 'Notifications'),
+                      BottomNavigationBarItem( 
+                        icon: Icon(
+                          Icons.chat
+                        ), 
+                        label: 'Messages'
+                      ),
+                      BottomNavigationBarItem( icon: Icon(Icons.arrow_back), label: 'Back'),
+                    ],
+                    onTap: (index) async {
+          
+                      if ( index != 4 )
+                        BlocProvider.of<TabsBloc>(context).add(
+                          ChangeActiveTab(index)
+                        );
+                      
+                      if (index == 0) {
+                        await _inAppWebViewController.loadUrl(
+                            url: 'https://yourvoyce.com/?home');
+                      } else if (index == 1) {
+                        await _inAppWebViewController.loadUrl(
+                            url: 'https://yourvoyce.com/search');
+                      } else if (index == 2) {
+                        await _inAppWebViewController.loadUrl(
+                            url: 'https://yourvoyce.com/activity/notifications');
+                      } else if ( index == 3 ) {
+                          await _inAppWebViewController.loadUrl(
+                            url: 'https://yourvoyce.com/Pages/YVMessages'
+                          );
+                      } else if (index == 4) {
+                        if (await _inAppWebViewController.canGoBack()) {
+                          final int currentIndex = (await _inAppWebViewController.getCopyBackForwardList()).currentIndex;
+                          final String prevLink =(await _inAppWebViewController.getCopyBackForwardList()).list[currentIndex - 2].url;
+
+                          await _inAppWebViewController.loadUrl(url: prevLink);
+                        }
+                      }
+                    },
+                  );
+                },
+              ),
             );
-          },
-        ),
-      ),
+            
+          return IntroPage();
+        }, 
+        listener: (context, state) {
+          if ( state is AuthenticationUnauthenticated ) {
+            
+          }
+        }
+      )
     );
   }
 }

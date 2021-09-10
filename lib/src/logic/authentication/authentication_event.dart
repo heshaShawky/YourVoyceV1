@@ -13,11 +13,13 @@ class Login extends AuthenticationEvent {
   final String token;
 
   const Login({
-    @required this.token
+    @required this.token,
   });
   
   @override
   List<Object> get props => [token];
 }
+
+class AcceptELUA extends AuthenticationEvent {}
 
 class Logout extends AuthenticationEvent {}
